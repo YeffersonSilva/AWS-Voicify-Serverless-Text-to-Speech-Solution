@@ -10,7 +10,7 @@ To start working with this project, follow the steps below to install and set up
 First, clone the project repository and access the `api-tts/` folder using the following commands in the terminal:
 
 ```bash
-git clone [https://github.com/Compass-pb-aws-2024-IFSUL-UFERSA/sprint-6-pb-aws-ifsul-ufersa.git](https://github.com/YeffersonSilva/AWS-Voicify-Serverless-Text-to-Speech-Solution.git)
+git clone https://github.com/YeffersonSilva/AWS-Voicify-Serverless-Text-to-Speech-Solution.git
 cd AWS-Voicify-Serverless-Text-to-Speech-Solution
 
 ```
