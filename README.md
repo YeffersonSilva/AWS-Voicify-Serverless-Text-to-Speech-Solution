@@ -13,7 +13,7 @@ First, clone the project repository and access the `api-tts/` folder using the f
 git clone [https://github.com/Compass-pb-aws-2024-IFSUL-UFERSA/sprint-6-pb-aws-ifsul-ufersa.git](https://github.com/YeffersonSilva/AWS-Voicify-Serverless-Text-to-Speech-Solution.git)
 cd AWS-Voicify-Serverless-Text-to-Speech-Solution
 
-
+```
 ### 2. Serverless Framework Installation
 The Serverless Framework is necessary for deploying the application. Install it globally on your computer:
 ```bash
@@ -45,9 +45,6 @@ serverless offline
 ```
 
 After executing the last command, the available endpoints for the application will be listed in your terminal.
-
-
-![sls offline](./assets/sls-offline.png)
 
 #### 4.2 Project Deployment on AWS
 To deploy the project on AWS, you can use the serverless deploy command. Make sure your credentials and environment variables are correctly configured and that you have assigned the necessary permissions to interact with the specified AWS services in the project.
