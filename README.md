@@ -1,5 +1,5 @@
 # AWS-Voicify-Serverless-Text-to-Speech-Solution
-
+This project involves creating a serverless application that captures a phrase entered by the user and converts it into an MP3 audio file using AWS's Polly service.
 
 ## 💻 How to Use the System
 
