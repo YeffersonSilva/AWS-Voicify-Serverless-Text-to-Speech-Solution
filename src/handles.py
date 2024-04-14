@@ -57,3 +57,27 @@ def synthesize_speech(phrase):
     return response['AudioStream'].read()
 
 # Guardar audio en S3 y devolver URL del archivo
+
+def save_audio_to_s3(audio_data, unique_id):
+    # Salva o áudio no S3
+    object_key = f'audio-{unique_id}.mp3'
+    s3_client.put_object(
+        Body=audio_data,
+        Bucket=bucket_name,
+        Key=object_key,
+        ContentType='audio/mpeg')
+    return f'https://{bucket_name}.s3.amazonaws.com/{object_key}'
+
+# Guardar referencia del audio en DynamoDB
+
+def save_reference_to_dynamodb(unique_id, received_phrase, audio_url):
+    # Salva uma referência no DynamoDB
+    dynamodb_client.put_item(
+        TableName=table_name,
+        Item={
+            'unique_id': {'S': unique_id},
+            'received_phrase': {'S': received_phrase},
+            'audio_url': {'S': audio_url},
+            'created_audio': {'S': datetime.now().strftime("%d-%m-%Y %H:%M:%S")}
+        }
+    )
