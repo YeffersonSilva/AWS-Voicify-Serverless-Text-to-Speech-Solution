@@ -3,7 +3,7 @@ frameworkVersion: "3"
 
 provider:
   name: aws
-  runtime: python3.11
+  runtime: python3.9
   httpApi:
     cors: true
 functions:
