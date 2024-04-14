@@ -81,3 +81,28 @@ def save_reference_to_dynamodb(unique_id, received_phrase, audio_url):
             'created_audio': {'S': datetime.now().strftime("%d-%m-%Y %H:%M:%S")}
         }
     )
+    #verifica se o hash existe
+    # Verificar si un hash existe en DynamoDB
+
+def existing_hash(table_name,hash):
+    # Verificar o hash
+    responseHash = dynamodb_client.get_item(
+        TableName = table_name,
+        Key={'unique_id': {'S': str(hash)}}
+    )
+    if 'Item' in responseHash:
+        return responseHash['Item']
+    else:
+        return None
+    
+    
+# Añadir cabeceras CORS a una respuesta HTTP
+    
+def add_cors_headers(response):
+    response['headers'] = {
+        # Ou você pode definir apenas domínios específicos que podem acessar sua API
+        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Headers': 'Content-Type',
+        'Access-Control-Allow-Methods': 'OPTIONS, POST, GET'
+    }
+    return response
