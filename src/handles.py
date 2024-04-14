@@ -44,3 +44,16 @@ def extract_phrase_from_request(event):
 def generate_unique_id(phrase):
     # Gera um hash MD5 único com base na frase recebida
     return hashlib.md5(phrase.encode()).hexdigest()
+
+def synthesize_speech(phrase):
+    # Solicitação ao Polly para converter o texto em fala
+    response = polly_client.synthesize_speech(
+        LanguageCode='pt-BR',
+        Engine='neural',
+        Text=phrase,
+        OutputFormat='mp3',
+        VoiceId='Vitoria'
+    )
+    return response['AudioStream'].read()
+
+# Guardar audio en S3 y devolver URL del archivo
