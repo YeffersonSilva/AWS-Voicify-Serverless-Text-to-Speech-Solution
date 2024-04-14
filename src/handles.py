@@ -12,3 +12,19 @@ load_dotenv()
 
 bucket_name = os.getenv('S3_BUCKET')
 table_name = os.getenv('DYNAMODB_TABLE')
+
+bucket_name = os.getenv('S3_BUCKET')
+table_name = os.getenv('DYNAMODB_TABLE')
+
+# Configurar sessão Boto3 com credenciais e região
+session = boto3.session.Session(
+    aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
+    aws_secret_access_key=os.getenv('AWS_SECRET_ACCESS_KEY'),
+    aws_session_token=os.getenv('AWS_SESSION_TOKEN'),
+    region_name=os.getenv('AWS_REGION')
+)
+# Crear clientes de AWS para Polly, S3, y DynamoDB
+
+polly_client = session.client('polly')
+s3_client = session.client('s3')
+dynamodb_client = session.client('dynamodb')
