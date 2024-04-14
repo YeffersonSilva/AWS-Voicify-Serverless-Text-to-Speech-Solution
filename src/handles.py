@@ -28,3 +28,19 @@ session = boto3.session.Session(
 polly_client = session.client('polly')
 s3_client = session.client('s3')
 dynamodb_client = session.client('dynamodb')
+
+# Extraer frase de un evento HTTP
+
+def extract_phrase_from_request(event):
+    req = json.loads(event.get('body'))
+    received_phrase = req.get('phrase', None)
+    if received_phrase is None:
+        return None
+    return received_phrase
+
+
+# Generar un identificador único usando hash MD5 de la frase
+
+def generate_unique_id(phrase):
+    # Gera um hash MD5 único com base na frase recebida
+    return hashlib.md5(phrase.encode()).hexdigest()
