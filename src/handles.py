@@ -13,9 +13,6 @@ load_dotenv()
 bucket_name = os.getenv('S3_BUCKET')
 table_name = os.getenv('DYNAMODB_TABLE')
 
-bucket_name = os.getenv('S3_BUCKET')
-table_name = os.getenv('DYNAMODB_TABLE')
-
 # Configurar sessão Boto3 com credenciais e região
 session = boto3.session.Session(
     aws_access_key_id=os.getenv('AWS_ACCESS_KEY_ID'),
@@ -23,13 +20,11 @@ session = boto3.session.Session(
     aws_session_token=os.getenv('AWS_SESSION_TOKEN'),
     region_name=os.getenv('AWS_REGION')
 )
-# Crear clientes de AWS para Polly, S3, y DynamoDB
 
 polly_client = session.client('polly')
 s3_client = session.client('s3')
 dynamodb_client = session.client('dynamodb')
 
-# Extraer frase de un evento HTTP
 
 def extract_phrase_from_request(event):
     req = json.loads(event.get('body'))
@@ -38,12 +33,10 @@ def extract_phrase_from_request(event):
         return None
     return received_phrase
 
-
-# Generar un identificador único usando hash MD5 de la frase
-
 def generate_unique_id(phrase):
     # Gera um hash MD5 único com base na frase recebida
     return hashlib.md5(phrase.encode()).hexdigest()
+
 
 def synthesize_speech(phrase):
     # Solicitação ao Polly para converter o texto em fala
@@ -56,8 +49,6 @@ def synthesize_speech(phrase):
     )
     return response['AudioStream'].read()
 
-# Guardar audio en S3 y devolver URL del archivo
-
 def save_audio_to_s3(audio_data, unique_id):
     # Salva o áudio no S3
     object_key = f'audio-{unique_id}.mp3'
@@ -68,7 +59,6 @@ def save_audio_to_s3(audio_data, unique_id):
         ContentType='audio/mpeg')
     return f'https://{bucket_name}.s3.amazonaws.com/{object_key}'
 
-# Guardar referencia del audio en DynamoDB
 
 def save_reference_to_dynamodb(unique_id, received_phrase, audio_url):
     # Salva uma referência no DynamoDB
@@ -81,9 +71,8 @@ def save_reference_to_dynamodb(unique_id, received_phrase, audio_url):
             'created_audio': {'S': datetime.now().strftime("%d-%m-%Y %H:%M:%S")}
         }
     )
-    #verifica se o hash existe
-    # Verificar si un hash existe en DynamoDB
 
+#verifica se o hash existe
 def existing_hash(table_name,hash):
     # Verificar o hash
     responseHash = dynamodb_client.get_item(
@@ -96,7 +85,6 @@ def existing_hash(table_name,hash):
         return None
     
     
-# Añadir cabeceras CORS a una respuesta HTTP
     
 def add_cors_headers(response):
     response['headers'] = {
@@ -106,3 +94,118 @@ def add_cors_headers(response):
         'Access-Control-Allow-Methods': 'OPTIONS, POST, GET'
     }
     return response
+
+    
+
+def health(event, context):
+    body = {
+        "message": "Go Serverless v3.0! Your function executed successfully!",
+        "input": event,
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response
+
+
+def v1_description(event, context):
+    body = {
+        "message": "TTS api version 1."
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response
+
+
+def v2_description(event, context):
+    body = {
+        "message": "TTS api version 2."
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(body)}
+
+    return response
+
+
+def v1_tts(event, context):
+ 
+    received_phrase = extract_phrase_from_request(event)
+    if received_phrase is None:
+        return {"statusCode": 400, "body": "Bad Request"}
+ 
+    # Gera um ID único
+    unique_id = generate_unique_id(received_phrase)
+ 
+    # Solicitação ao Polly para converter o texto em fala
+    audio_stream = synthesize_speech(received_phrase)
+ 
+    # Salva o áudio no S3
+    audio_url = save_audio_to_s3(audio_stream, unique_id)
+ 
+    # Preparação do corpo da resposta incluindo a frase recebida, a URL do áudio e a data de criação
+    response_body = {
+        'received_phrase': received_phrase,
+        'url_to_audio': audio_url,
+        'created_audio': datetime.now().strftime('%d-%m-%Y %H:%M:%S')
+    }
+ 
+    # Retorno da resposta com status 200 e o corpo em formato JSON
+    response = {"statusCode": 200,
+                "body": json.dumps(response_body)}
+    return add_cors_headers(response)
+
+
+def v2_tts(event, context):
+    
+    received_phrase = extract_phrase_from_request(event)
+    if received_phrase is None:
+        return {"statusCode": 400, "body": "Bad Request"}
+
+    # Gera um ID único
+    unique_id = generate_unique_id(received_phrase)
+
+    audio_stream = synthesize_speech(received_phrase)
+
+    # Salva o áudio no S3
+    audio_url = save_audio_to_s3(audio_stream, unique_id)
+
+    # Salva uma referência no DynamoDB
+    save_reference_to_dynamodb(unique_id, received_phrase, audio_url)
+
+    # Constrói a resposta
+    response_body = {
+        "received_phrase": received_phrase,
+        "url_to_audio": audio_url,
+        "created_audio": datetime.now().strftime("%d-%m-%Y %H:%M:%S"),
+        "unique_id": unique_id
+    }
+
+    response = {"statusCode": 200, "body": json.dumps(response_body)}
+    return response
+
+
+def v3_tts(event, context):
+
+    received_phrase = extract_phrase_from_request(event)
+    if received_phrase is None:
+        return {"statusCode": 400, "body": "Bad Request"}
+
+    # Gera um ID único
+    unique_id = generate_unique_id(received_phrase)
+
+    hash_info = existing_hash(table_name, unique_id)
+
+    if (hash_info) is None:
+        # se não existir uma referência no DynamoDB, criar um novo registro
+        return v2_tts(event=event, context=context)
+    else: 
+        response_body = {
+            "received_phrase": received_phrase,
+            "url_to_audio": hash_info['audio_url']['S'],
+            "created_audio": hash_info['created_audio']['S'],
+            "unique_id": unique_id
+        }
+        response = {"statusCode": 200, "body": json.dumps(response_body)}
+        return response
+        
