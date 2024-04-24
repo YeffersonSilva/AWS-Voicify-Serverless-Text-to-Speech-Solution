@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atividade Sprint-6</title>
+    
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400..700&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: "Nunito", sans-serif;
+        }
+
+        body {
+            background: #287ba1
+        }
+
+        .container {
+            min-height: 100vh;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .card {
+            width: 400px;
+            min-height: 250px;
+            background: rgba(255, 255, 255, 0.15);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            z-index: 10;
+            color: whitesmoke;
+        }
+
+        .title {
+            font-size: 2.2rem;
+            margin-bottom: 1rem;
+            font-family: "Dancing Script", cursive;
+        }
+
+        .subtitle {
+            font-size: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        #text-input {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            color: whitesmoke;
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-family: "Raleway", sans-serif;
+        }
+
+        #version-select {
+            width: 50%;
+            padding: 0.5rem;
+            /* margin-left: 25%; */
+            margin-bottom: 1.5rem;
+            border-radius: 0.5rem;
+            color: rgb(0, 0, 0);
+            outline: none;
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            font-family: "Raleway", sans-serif;
+        }
+
+        #audio {
+            margin: 0 auto;
+            display: block;
+            margin-top: 5%;
+        }
+
+        .btn {
+            background: none;
+            border: none;
+            text-align: center;
+            font-size: 1rem;
+            color: whitesmoke;
+            background-color: #fa709a;
+            padding: 0.8rem 2.0rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            margin: 0 auto;
+            display: block;
+            font-family: "Raleway", sans-serif;
+        }
+
+        .blob {
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: linear-gradient(180deg,
+                    rgba(47, 184, 255, 0.42) 31.77%,
+                    #5c9df1 100%);
+            mix-blend-mode: color-dodge;
+            -webkit-animation: move 25s infinite alternate;
+            animation: move 25s infinite alternate;
+            transition: 1s cubic-bezier(0.07, 0.8, 0.16, 1);
+        }
+
+        .blob:hover {
+            width: 520px;
+            height: 520px;
+            -webkit-filter: blur(30px);
+            filter: blur(30px);
+            box-shadow:
+                inset 0 0 0 5px rgba(255, 255, 255, 0.6),
+                inset 100px 100px 0 0px #fa709a,
+                inset 200px 200px 0 0px #784ba8,
+                inset 300px 300px 0 0px #2b86c5;
+        }
+
+        @-webkit-keyframes move {
+            from {
+                transform: translate(-100px, -50px) rotate(-90deg);
+                border-radius: 24% 76% 35% 65% / 27% 36% 64% 73%;
+            }
+
+            to {
+                transform: translate(500px, 100px) rotate(-10deg);
+                border-radius: 76% 24% 33% 67% / 68% 55% 45% 32%;
+            }
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(-100px, -50px) rotate(-90deg);
+                border-radius: 24% 76% 35% 65% / 27% 36% 64% 73%;
+            }
+
+            to {
+                transform: translate(500px, 100px) rotate(-10deg);
+                border-radius: 76% 24% 33% 67% / 68% 55% 45% 32%;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <div class="card">
+            <form id="tts-form" method="POST" onsubmit="submitForm(event)">
+                <h1 class="title">Síntese de fala</h1>
+                <input id="text-input" type="text" placeholder="Insira um texto para conversão" />
+                <select id="version-select" onchange="changeVersion(this.value)">
+                    <option value="" disabled selected>Escolha uma versão</option>
+                    <option value="v1">Versão 1</option>
+                    <option value="v2">Versão 2</option>
+                    <option value="v3">Versão 3</option>
+                </select>
+                <input class="btn" type="submit" value="Converter" />
+                <audio id="audio" controls style="display: none;">
+                    Your browser does not support the <code>audio</code> element.
+                </audio>
+            </form>
+        </div>
+        <div class="blob"></div>
+    </div>
+
+
+    <script>
+        var form = document.getElementById('tts-form');
+        var versionSelect = document.getElementById('version-select');
+        var textoInput = document.getElementById('text-input').value
+
+        // Função para mudar a versão do TTS e submeter o formulário com o URL correto
+        function changeVersion(version) {
+            // Atualiza o action do formulário com base na versão selecionada
+            form.action = 'https://sjd0d04oy6.execute-api.us-east-1.amazonaws.com/' + version + '/tts';
+            console.log("Versão selecionada: " + version);
+        }
+
+        function submitForm(event) {
+            event.preventDefault();
+
+            // Obtém o valor do campo de entrada de texto
+            var textoInput = document.getElementById('text-input').value;
+
+            // Cria um objeto JSON com a estrutura { "phrase": textoInput }
+            var requestBody = JSON.stringify({ "phrase": textoInput });
+
+            // Envia a requisição POST com o corpo do JSON
+            fetch(form.action, {
+                method: 'POST',
+                body: requestBody,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+                .then(response => response.json())
+                .then(data => {
+                    console.log(data);
+                    if (data.url_to_audio) {
+                        var audio = document.getElementById('audio');
+                        audio.src = data.url_to_audio;
+                        audio.style.display = 'block';
+                        audio.play();
+                    } else {
+                        alert('Falha ao converter texto para fala.');
+                    }
+                })
+                .catch(error => console.error('Error:', error));
+        }
+
+    </script>
+</body>
+
+</html>
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+</body>
+
+</html>
